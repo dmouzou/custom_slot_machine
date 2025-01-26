@@ -1,4 +1,4 @@
-library flutter_slot_machine;
+library custom_slot_machine;
 
 import 'dart:async';
 import 'dart:math';
@@ -10,7 +10,7 @@ class SlotMachineController {
     required this.stop,
   });
 
-  final Function({required int? hitRollItemIndex}) start;
+  final Function({required List<int>? hitRollItemIndex}) start;
   final Function({required int reelIndex}) stop;
 }
 
@@ -106,6 +106,24 @@ class _SlotMachineState extends State<SlotMachine> {
                 shuffle: widget.shuffle,
                 onCreated: (lc) => _reelControllers[2] = lc,
               ),
+              SizedBox(width: widget.reelSpacing),
+              _Reel(
+                reelWidth: widget.reelWidth,
+                reelHeight: widget.reelHeight,
+                itemExtent: widget.reelItemExtent,
+                rollItems: _actualRollItems,
+                shuffle: widget.shuffle,
+                onCreated: (lc) => _reelControllers[3] = lc,
+              ),
+              SizedBox(width: widget.reelSpacing),
+              _Reel(
+                reelWidth: widget.reelWidth,
+                reelHeight: widget.reelHeight,
+                itemExtent: widget.reelItemExtent,
+                rollItems: _actualRollItems,
+                shuffle: widget.shuffle,
+                onCreated: (lc) => _reelControllers[4] = lc,
+              ),
             ],
           ),
         ),
@@ -113,15 +131,15 @@ class _SlotMachineState extends State<SlotMachine> {
     );
   }
 
-  _start({required int? hitRollItemIndex}) {
+  _start({required List<int>? hitRollItemIndex}) {
     _stopCounter = 0;
     _resultIndexes = [];
 
     final win = hitRollItemIndex != null;
     if (win) {
-      final index = hitRollItemIndex;
-      if (index == null) return;
-      _resultIndexes.addAll([index, index, index]);
+      final indexList = hitRollItemIndex;
+      if (indexList == null) return;
+      _resultIndexes.addAll(indexList);
     } else {
       _resultIndexes = _randomResultIndexes(widget.rollItems.length);
     }
@@ -129,7 +147,7 @@ class _SlotMachineState extends State<SlotMachine> {
   }
 
   _stop({required int reelIndex}) {
-    assert(reelIndex >= 0 && reelIndex <= 3);
+    assert(reelIndex >= 0 && reelIndex <= 5);
 
     final lc = _reelControllers[reelIndex];
     if (lc == null) return;
@@ -137,7 +155,7 @@ class _SlotMachineState extends State<SlotMachine> {
     lc.stop(to: _resultIndexes[reelIndex]);
 
     _stopCounter++;
-    if (_stopCounter == 3) {
+    if (_stopCounter == 5) {
       Future.delayed(const Duration(milliseconds: 500), () {
         widget.onFinished(_resultIndexes);
       });
@@ -151,9 +169,20 @@ class _SlotMachineState extends State<SlotMachine> {
       final arr = [
         Random().nextInt(length),
         Random().nextInt(length),
+        Random().nextInt(length),
+        Random().nextInt(length),
         Random().nextInt(length)
       ];
-      if (arr[0] != arr[1] || arr[0] != arr[2] || arr[1] != arr[2]) {
+      if (arr[0] != arr[1] ||
+          arr[0] != arr[2] ||
+          arr[0] != arr[4] ||
+          arr[0] != arr[4] ||
+          arr[1] != arr[2] ||
+          arr[1] != arr[3] ||
+          arr[1] != arr[4] ||
+          arr[2] != arr[3] ||
+          arr[2] != arr[4] ||
+          arr[3] != arr[4]) {
         _indexes = arr;
         ok = true;
       }
